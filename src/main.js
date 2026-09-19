@@ -57,7 +57,9 @@ const sideLayout = window.matchMedia("(min-width: 900px) and (orientation: lands
 function syncHole() {
   const rect = ui.console.getBoundingClientRect();
   if (sideLayout.matches) {
-    ui.hole.style.left = `${rect.right + 32}px`;
+    // measure to the outer edge of the right wheel, which sticks out of the console box
+    const right = Math.max(rect.right, ui.console.querySelector(".wheel-right").getBoundingClientRect().right);
+    ui.hole.style.left = `${right + 28}px`;
     ui.hole.style.bottom = "";
   } else {
     ui.hole.style.left = "";
@@ -65,6 +67,7 @@ function syncHole() {
   }
 }
 sideLayout.addEventListener("change", syncHole);
+document.fonts?.ready.then(syncHole); // the web font changes the console's size once it loads
 new ResizeObserver(syncHole).observe(ui.console);
 window.addEventListener("resize", syncHole);
 syncHole();
@@ -281,6 +284,7 @@ function loadLevel(index) {
   renderLevelButtons();
   world.build(currentLevel());
   resetRobot();
+  syncHole(); // the palette (∞ shown or not) can change the console's width
 }
 
 function addCommand(command) {

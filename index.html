@@ -16,25 +16,26 @@
 
     <nav id="levels" class="levels" aria-label="Elegir nivel"></nav>
 
-    <!-- The console is the robot itself: instructions are loaded into its head -->
+    <!-- The console is the robot itself, built like the 3D one: a single body with the
+         visor (its memory) on the front, grey ears beside it and wheels on the sides -->
     <section id="console" class="console" aria-label="Programa del robot">
       <span class="antenna" aria-hidden="true"></span>
-      <div class="head" data-drop aria-label="Memoria del robot">
+      <div class="shell">
         <span class="ear ear-left" aria-hidden="true"></span>
         <span class="ear ear-right" aria-hidden="true"></span>
-        <div class="screen">
+        <span class="wheel wheel-left" aria-hidden="true"></span>
+        <span class="wheel wheel-right" aria-hidden="true"></span>
+        <div class="screen" data-drop aria-label="Memoria del robot">
           <div id="leds" class="leds" aria-hidden="true"></div>
           <div id="program" class="program"></div>
         </div>
-      </div>
-      <div class="body">
-        <button type="button" id="reset" class="reset" aria-label="Borrar programa y reiniciar">
-          <svg viewBox="0 0 24 24"><path d="M5 12a7 7 0 1 0 2.1-5" /><path d="M4 3v5h5" /></svg>
-        </button>
-        <div id="palette" class="palette" aria-label="Instrucciones disponibles"></div>
-        <button type="button" id="run" class="run" aria-label="Ejecutar instrucciones"></button>
-        <span class="wheel wheel-left" aria-hidden="true"></span>
-        <span class="wheel wheel-right" aria-hidden="true"></span>
+        <div class="controls">
+          <button type="button" id="reset" class="reset" aria-label="Borrar programa y reiniciar">
+            <svg viewBox="0 0 24 24"><path d="M5 12a7 7 0 1 0 2.1-5" /><path d="M4 3v5h5" /></svg>
+          </button>
+          <div id="palette" class="palette" aria-label="Instrucciones disponibles"></div>
+          <button type="button" id="run" class="run" aria-label="Ejecutar instrucciones"></button>
+        </div>
       </div>
     </section>
 

@@ -170,9 +170,9 @@ body.dragging, body.dragging * { cursor: grabbing !important; }
   position: fixed;
   z-index: 5;
   left: 50%;
-  bottom: 38px; /* room for the wheels */
+  bottom: 34px; /* room for the wheels */
   transform: translateX(calc(-50% - (var(--levels-w) + 16px) / 2));
-  max-width: calc(100vw - var(--levels-w) - 48px);
+  max-width: calc(100vw - var(--levels-w) - 110px);
   display: grid;
   justify-items: center;
 }
@@ -206,23 +206,28 @@ body.dragging, body.dragging * { cursor: grabbing !important; }
 }
 .console.busy .antenna::after { animation: antenna-blink .5s steps(1) infinite; }
 
-.head {
+/* One body, like the 3D robot: light top plate, grey base band */
+.shell {
   position: relative;
-  z-index: 1;
-  padding: 14px 18px 18px;
+  display: grid;
+  justify-items: center;
+  gap: 16px;
+  padding: 16px 20px 28px;
   border-radius: 6px;
   background: linear-gradient(180deg, var(--shell-top) 0 10px, var(--shell) 10px);
-  box-shadow: inset 0 -7px 0 var(--shell-edge), 0 8px 18px rgba(35, 25, 55, .25);
+  box-shadow:
+    inset 0 -12px 0 var(--shell-edge),
+    0 7px 0 var(--shell-deep),
+    0 20px 24px rgba(35, 25, 55, .3);
 }
 
-/* Ears: dark side pads peeking out behind the head */
-/* Ears: small grey side blocks, like the 3D robot's */
+/* Ears: small grey blocks on the sides, level with the visor */
 .ear {
   position: absolute;
   z-index: -1;
-  top: 32%;
+  top: 16%;
   width: 18px;
-  height: 36%;
+  height: 22%;
   border-radius: 3px;
   background: var(--metal);
   box-shadow: inset 0 -4px 0 rgba(0, 0, 0, .15);
@@ -241,7 +246,7 @@ body.dragging, body.dragging * { cursor: grabbing !important; }
   box-shadow: inset 0 5px 10px rgba(0, 0, 0, .45), inset 0 0 0 3px color-mix(in srgb, var(--visor) 75%, #fff);
   transition: box-shadow .15s ease;
 }
-.head.drop-over .screen { box-shadow: inset 0 5px 10px rgba(0, 0, 0, .45), inset 0 0 0 3px var(--scan), 0 0 22px color-mix(in srgb, var(--scan) 70%, transparent); }
+.screen.drop-over { box-shadow: inset 0 5px 10px rgba(0, 0, 0, .45), inset 0 0 0 3px var(--scan), 0 0 22px color-mix(in srgb, var(--scan) 70%, transparent); }
 
 .leds { display: flex; gap: 14px; height: 14px; align-items: center; }
 .led {
@@ -305,40 +310,31 @@ body.dragging, body.dragging * { cursor: grabbing !important; }
   box-shadow: inset 0 0 0 2px #ff9a90, 0 var(--depth) 0 var(--e), 0 0 0 3px var(--stop), 0 0 18px 4px rgba(229, 88, 76, .7);
 }
 
-/* Body: palette + controls, with wheels underneath */
-.body {
-  position: relative;
-  margin-top: -6px;
+/* Controls on the robot's front, under the visor */
+.controls {
   display: flex;
   align-items: center;
   gap: 16px;
-  padding: 18px 20px 20px;
-  border-radius: 6px;
-  background: linear-gradient(180deg, var(--shell-top) 0 10px, var(--shell) 10px);
-  box-shadow:
-    inset 0 -8px 0 var(--shell-edge),
-    0 8px 0 var(--shell-deep),
-    0 20px 24px rgba(35, 25, 55, .3);
 }
 
 .palette { display: flex; gap: 12px; }
 
-/* Wheels: dark tyres with the orange hub, like the 3D robot's */
+/* Wheels on the sides, lower half, sticking out a bit below:
+   dark tyres with the orange hub, like the 3D robot's */
 .wheel {
   position: absolute;
   z-index: -1;
-  bottom: -26px;
-  width: 44px;
-  height: 44px;
+  bottom: -16px;
+  width: 38px;
+  height: 76px;
   border-radius: 3px;
-  /* only the lower part peeks out below the body; the hub sits centred in that part */
   background:
-    linear-gradient(var(--robot-hub, #f07b32), var(--robot-hub, #f07b32)) 50% 82% / 14px 14px no-repeat,
+    linear-gradient(var(--robot-hub, #f07b32), var(--robot-hub, #f07b32)) center / 18px 18px no-repeat,
     var(--robot-tire, #33303a);
-  box-shadow: inset 0 -5px 0 rgba(0, 0, 0, .35);
+  box-shadow: inset 0 -6px 0 rgba(0, 0, 0, .35), inset 0 0 0 3px rgba(255, 255, 255, .05);
 }
-.wheel-left { left: 26px; }
-.wheel-right { right: 26px; }
+.wheel-left { left: -34px; }
+.wheel-right { right: -34px; }
 
 /* Only round things: reset + play */
 .reset, .run { flex: none; display: grid; place-items: center; border-radius: 50%; }
@@ -427,7 +423,7 @@ body.dragging, body.dragging * { cursor: grabbing !important; }
 
 @media (min-width: 900px) and (orientation: landscape) {
   .console {
-    left: 32px;
+    left: 70px; /* the side wheel sticks out ~34px */
     top: 50%;
     bottom: auto;
     transform: translateY(-50%);
@@ -440,15 +436,15 @@ body.dragging, body.dragging * { cursor: grabbing !important; }
 /* --- narrow screens ------------------------------------------------------ */
 
 @media (max-width: 560px) {
-  :root { --tile: clamp(36px, 10.5vw, 56px); --depth: 6px; --levels-w: 50px; }
+  :root { --tile: clamp(34px, 9.6vw, 56px); --depth: 6px; --levels-w: 50px; }
   .levels { right: 8px; gap: 9px; padding: 9px 0 14px; }
   .level { width: 36px; height: 34px; font-size: 17px; }
   .hole { left: 4px; right: calc(var(--levels-w) + 12px); }
-  .console { transform: translateX(-50%); max-width: calc(100vw - 16px); bottom: 22px; }
+  .console { transform: translateX(-50%); max-width: calc(100vw - 40px); bottom: 18px; }
   .antenna { width: 22px; height: 44px; }
   .antenna::before { height: 24px; width: 6px; }
   .antenna::after { bottom: 22px; }
-  .head { padding: 10px 12px 14px; }
+  .shell { gap: 10px; padding: 10px 10px 20px; box-shadow: inset 0 -9px 0 var(--shell-edge), 0 5px 0 var(--shell-deep), 0 14px 18px rgba(35, 25, 55, .3); }
   .ear { width: 12px; }
   .ear-left { left: -8px; }
   .ear-right { right: -8px; }
@@ -456,11 +452,11 @@ body.dragging, body.dragging * { cursor: grabbing !important; }
   .leds { gap: 10px; height: 11px; }
   .led { width: 11px; height: 11px; }
   .program { --slot-gap: 6px; height: calc(var(--tile) + 14px + var(--depth)); padding: 0 2px var(--depth); max-width: calc(100vw - 80px); }
-  .body { gap: 8px; padding: 12px 12px 14px; }
+  .controls { gap: 8px; }
   .palette { gap: 6px; }
-  .wheel { width: 32px; height: 32px; bottom: -18px; background-size: 10px 10px, auto; }
-  .wheel-left { left: 18px; }
-  .wheel-right { right: 18px; }
+  .wheel { width: 22px; height: 52px; bottom: -12px; background-size: 11px 11px, auto; }
+  .wheel-left { left: -20px; }
+  .wheel-right { right: -20px; }
   .reset { width: 40px; height: 40px; }
   .reset svg { width: 21px; height: 21px; }
   .run { width: var(--tile); height: var(--tile); }
