@@ -187,31 +187,44 @@ export function createRobot() {
 
 // --- scenery -----------------------------------------------------------------
 
-export function createTree(scale = 1) {
+// Background scenery is desaturated and hazed toward the sky so it doesn't compete with the board.
+const SKY_HAZE = new THREE.Color(0x9ccbe0);
+export function faded(color, desaturate = 0.5, haze = 0.25) {
+  const c = new THREE.Color(color);
+  const hsl = {};
+  c.getHSL(hsl);
+  c.setHSL(hsl.h, hsl.s * (1 - desaturate), hsl.l);
+  return c.lerp(SKY_HAZE, haze).getHex();
+}
+
+export function createTree(scale = 1, tone = (color) => color) {
   const group = new THREE.Group();
-  group.add(box(0.14, 0.5, 0.14, mat(PALETTE.trunk), { y: 0.25 }));
-  group.add(box(0.6, 0.5, 0.6, mat(PALETTE.leaves), { y: 0.7 }));
-  group.add(box(0.36, 0.3, 0.36, mat(PALETTE.leavesLight), { x: 0.18, y: 0.98, z: 0.1 }));
-  group.add(box(0.3, 0.26, 0.3, mat(PALETTE.leaves), { x: -0.24, y: 0.6, z: -0.18 }));
+  group.add(box(0.14, 0.5, 0.14, mat(tone(PALETTE.trunk)), { y: 0.25 }));
+  group.add(box(0.6, 0.5, 0.6, mat(tone(PALETTE.leaves)), { y: 0.7 }));
+  group.add(box(0.36, 0.3, 0.36, mat(tone(PALETTE.leavesLight)), { x: 0.18, y: 0.98, z: 0.1 }));
+  group.add(box(0.3, 0.26, 0.3, mat(tone(PALETTE.leaves)), { x: -0.24, y: 0.6, z: -0.18 }));
   group.scale.setScalar(scale);
   return group;
 }
 
-// Floating chunk of land: grass top, dirt body, tapering rocks underneath.
+// Floating chunk of land for the background: grass top, dirt body, tapering rocks underneath.
+// Colours are faded (trees the most) so the scenery stays calm behind the board.
 export function createIsland(w, d, { h = 0.9, tree = false, tower = false } = {}) {
+  const ground = (color) => faded(color, 0.35, 0.2);
+  const foliage = (color) => faded(color, 0.55, 0.22);
   const group = new THREE.Group();
-  group.add(box(w, 0.18, d, mat(PALETTE.grass), { y: -0.09 }));
-  group.add(box(w * 0.96, h, d * 0.96, mat(PALETTE.cliff), { y: -0.18 - h / 2 }));
-  group.add(box(w * 0.6, h * 0.7, d * 0.65, mat(PALETTE.cliffDark), { x: w * 0.08, y: -0.18 - h - h * 0.35, z: -d * 0.05 }));
-  group.add(box(w * 0.3, h * 0.5, d * 0.3, mat(PALETTE.cliffDark), { x: -w * 0.1, y: -0.18 - h * 1.7 - h * 0.25 }));
+  group.add(box(w, 0.18, d, mat(ground(PALETTE.grass)), { y: -0.09 }));
+  group.add(box(w * 0.96, h, d * 0.96, mat(ground(PALETTE.cliff)), { y: -0.18 - h / 2 }));
+  group.add(box(w * 0.6, h * 0.7, d * 0.65, mat(ground(PALETTE.cliffDark)), { x: w * 0.08, y: -0.18 - h - h * 0.35, z: -d * 0.05 }));
+  group.add(box(w * 0.3, h * 0.5, d * 0.3, mat(ground(PALETTE.cliffDark)), { x: -w * 0.1, y: -0.18 - h * 1.7 - h * 0.25 }));
   if (tree) {
-    const t = createTree(Math.min(w, d) * 0.9);
+    const t = createTree(Math.min(w, d) * 0.9, foliage);
     group.add(t);
   }
   if (tower) {
-    group.add(box(w * 0.55, 1.1, d * 0.55, mat(0xe8d6b8), { y: 0.55 }));
-    group.add(box(w * 0.66, 0.24, d * 0.66, mat(0xd8644c), { y: 1.22 }));
-    group.add(box(w * 0.18, 0.34, 0.02, mat(0x8a5a44), { y: 0.17, z: d * 0.28 }));
+    group.add(box(w * 0.55, 1.1, d * 0.55, mat(ground(0xe8d6b8)), { y: 0.55 }));
+    group.add(box(w * 0.66, 0.24, d * 0.66, mat(ground(0xd8644c)), { y: 1.22 }));
+    group.add(box(w * 0.18, 0.34, 0.02, mat(ground(0x8a5a44)), { y: 0.17, z: d * 0.28 }));
   }
   return merge(group, { cast: false, receive: false });
 }

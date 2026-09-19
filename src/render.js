@@ -89,16 +89,33 @@ export class BoxWorld {
     add(models.createIsland(1.1, 1.0, { tree: true, h: 0.6 }), 2.6, 2.2, -8);
     add(models.createIsland(0.9, 0.9, { h: 0.5 }), -1, 1.2, -9);
 
+    // Blocky clouds in three depth layers; far ones are larger, fainter and slower.
+    // The camera looks down, so the visible "sky" behind the board is below it: clouds sit low.
     this.clouds = [];
-    const cloudMat = new THREE.MeshStandardMaterial({ color: 0xffffff, transparent: true, opacity: 0.55, roughness: 1 });
-    for (const [x, y, z, s] of [[-8, 2.5, -7, 1.4], [4, 3.2, -10, 1.8], [9, 1.5, -5, 1.1], [-2, 3.8, -12, 2]]) {
-      const puff = new THREE.Group();
-      puff.add(models.box(1.4 * s, 0.35 * s, 0.7 * s, cloudMat));
-      puff.add(models.box(0.8 * s, 0.3 * s, 0.6 * s, cloudMat, { x: 0.3 * s, y: 0.25 * s }));
-      const cloud = models.merge(puff, { cast: false, receive: false });
-      cloud.position.set(x, y, z);
-      this.scene.add(cloud);
-      this.clouds.push(cloud);
+    const layers = [
+      { count: 9, z: [-16, -11], y: [-7, -2.5], scale: [1.8, 2.6], opacity: 0.35, speed: 0.0025 },
+      { count: 8, z: [-9, -4], y: [-4, 0], scale: [1.2, 1.8], opacity: 0.5, speed: 0.004 },
+      { count: 5, z: [-2, 4], y: [-6, -3.5], scale: [1, 1.6], opacity: 0.55, speed: 0.005 }, // under the board's sides
+    ];
+    let seed = 7;
+    const rand = () => ((seed = (seed * 16807) % 2147483647) / 2147483647); // deterministic layout
+    const between = ([lo, hi]) => lo + rand() * (hi - lo);
+    for (const layer of layers) {
+      // fog: false, otherwise distance fog paints them sky-blue and they vanish
+      const cloudMat = new THREE.MeshStandardMaterial({ color: 0xffffff, emissive: 0xffffff, emissiveIntensity: 0.35, transparent: true, opacity: layer.opacity, roughness: 1, depthWrite: false, fog: false });
+      for (let i = 0; i < layer.count; i++) {
+        const s = between(layer.scale);
+        const puff = new THREE.Group();
+        puff.add(models.box(1.4 * s, 0.35 * s, 0.7 * s, cloudMat));
+        puff.add(models.box(0.8 * s, 0.3 * s, 0.6 * s, cloudMat, { x: (rand() - 0.3) * 0.6 * s, y: 0.25 * s }));
+        if (rand() > 0.4) puff.add(models.box(0.6 * s, 0.22 * s, 0.5 * s, cloudMat, { x: -0.55 * s, y: 0.12 * s }));
+        const cloud = models.merge(puff, { cast: false, receive: false });
+        // spread evenly across the wrap range so they never bunch up
+        cloud.position.set(-16 + (32 / layer.count) * (i + rand() * 0.8), between(layer.y), between(layer.z));
+        cloud.userData.speed = layer.speed * (0.8 + rand() * 0.4);
+        this.scene.add(cloud);
+        this.clouds.push(cloud);
+      }
     }
   }
 
@@ -380,7 +397,7 @@ export class BoxWorld {
     const time = this.clock.getElapsedTime();
     if (!reducedMotion) {
       for (const f of this.floaters) f.position.y = f.userData.float.baseY + Math.sin(time * 0.6 + f.userData.float.phase) * f.userData.float.bob;
-      for (const c of this.clouds) c.position.x = ((c.position.x + 0.004 + 14) % 28) - 14;
+      for (const c of this.clouds) c.position.x = ((c.position.x + c.userData.speed + 16) % 32) - 16;
     }
     for (const { mesh, tile, phase } of this.batteries?.values() ?? []) {
       if (mesh.visible) {
