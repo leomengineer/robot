@@ -1,0 +1,350 @@
+:root {
+  --ink: #3b3150;
+  --panel: #f1e6d2;
+  --panel-top: #f8f0e2;
+  --panel-edge: #d5c3a4;
+  --panel-deep: #4a3f62;
+  --panel-deeper: #3a3150;
+  --tray: #ddccb0;
+  --tray-deep: #c9b594;
+  --cap: #e2664c;
+  --cap-edge: #b44a36;
+  --slot: #8d8192;
+  --slot-deep: #6f6376;
+
+  --up: #27a6b8;      --up-edge: #1a7886;
+  --left: #8b62d8;    --left-edge: #6343a8;
+  --right: #ef7b3b;   --right-edge: #bb5625;
+  --down: #e25a7c;    --down-edge: #a93c5a;
+  --loop: #f3b733;    --loop-edge: #bf861b;
+  --play: #f8b02b;    --play-edge: #c67d0f;
+  --stop: #e5584c;    --stop-edge: #a8392f;
+  --done: #69bd6b;    --done-edge: #468a4a;
+
+  --tile: clamp(50px, min(8vh, 13vw), 72px);
+  --depth: 7px;         /* how far box faces stick out */
+  --r: 4px;             /* boxes get a hint of bevel, nothing rounder */
+  --levels-w: 64px;
+}
+
+* { box-sizing: border-box; }
+
+html, body { height: 100%; margin: 0; }
+
+body {
+  overflow: hidden;
+  background: linear-gradient(180deg, #86c6de 0%, #62a6c9 55%, #4c8db5 100%);
+  color: var(--ink);
+  font-family: "Fredoka", ui-rounded, "SF Pro Rounded", system-ui, sans-serif;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+button {
+  font: inherit;
+  color: inherit;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+  touch-action: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+button:focus-visible { outline: 4px solid #fff; outline-offset: 3px; }
+
+svg .fill { fill: #fff; stroke: #fff; stroke-width: 1.4; stroke-linejoin: round; }
+svg .line { fill: none; stroke: #fff; stroke-width: 3; stroke-linecap: square; stroke-linejoin: miter; }
+
+.stage { position: fixed; inset: 0; }
+.stage canvas { display: block; width: 100%; height: 100%; }
+
+/* Area the 3D board is framed into; bottom is synced to the console by JS */
+.hole {
+  position: fixed;
+  pointer-events: none;
+  top: 16px;
+  left: 16px;
+  right: calc(var(--levels-w) + 32px);
+  bottom: 200px;
+}
+
+/* --- command boxes ----------------------------------------------------------
+   A box = lighter top face + solid front face (the shadow below it). */
+
+.cmd {
+  --c: var(--up);
+  --e: var(--up-edge);
+  position: relative;
+  flex: none;
+  width: var(--tile);
+  height: var(--tile);
+  display: grid;
+  place-items: center;
+  border-radius: var(--r);
+  background: linear-gradient(180deg, color-mix(in srgb, var(--c) 82%, #fff) 0 12%, var(--c) 12% 100%);
+  box-shadow:
+    inset 0 0 0 2px color-mix(in srgb, var(--c) 70%, #fff),
+    inset 0 -4px 0 color-mix(in srgb, var(--e) 45%, var(--c)),
+    0 var(--depth) 0 var(--e),
+    0 calc(var(--depth) + 5px) 8px rgba(35, 25, 55, .28);
+  transition: transform .1s ease, box-shadow .1s ease, opacity .15s ease, filter .15s ease;
+}
+
+.cmd svg { width: 56%; height: 56%; filter: drop-shadow(0 2px 0 rgba(0, 0, 0, .2)); }
+.cmd-up { --c: var(--up); --e: var(--up-edge); }
+.cmd-right { --c: var(--right); --e: var(--right-edge); }
+.cmd-right svg { transform: rotate(90deg); }
+.cmd-down { --c: var(--down); --e: var(--down-edge); }
+.cmd-down svg { transform: rotate(180deg); }
+.cmd-left { --c: var(--left); --e: var(--left-edge); }
+.cmd-left svg { transform: rotate(-90deg); }
+.cmd-loop { --c: var(--loop); --e: var(--loop-edge); }
+
+@media (hover: hover) { .cmd:hover { transform: translateY(-2px); } }
+.cmd:active {
+  transform: translateY(calc(var(--depth) - 2px));
+  box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--c) 70%, #fff), 0 2px 0 var(--e);
+}
+.cmd.unavailable { filter: saturate(.3) brightness(.95); opacity: .55; }
+.cmd[hidden] { display: none; }
+
+.ghost {
+  position: fixed;
+  z-index: 50;
+  pointer-events: none;
+  transform: translate(-50%, -50%) rotate(-5deg) scale(1.08);
+  box-shadow: 0 var(--depth) 0 var(--e), 0 20px 24px rgba(35, 25, 55, .4);
+}
+
+body.dragging, body.dragging * { cursor: grabbing !important; }
+
+/* --- level column (right) ---------------------------------------------- */
+
+.levels {
+  position: fixed;
+  z-index: 5;
+  right: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: var(--levels-w);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 0 18px;
+  border-radius: var(--r);
+  background: var(--panel-deep);
+  box-shadow: inset 0 -6px 0 var(--panel-deeper), 0 10px 18px rgba(35, 25, 55, .3);
+}
+
+.level {
+  --c: var(--panel);
+  --e: var(--panel-edge);
+  width: 44px;
+  height: 40px;
+  border-radius: var(--r);
+  background: linear-gradient(180deg, var(--panel-top) 0 14%, var(--c) 14%);
+  color: var(--ink);
+  font-size: 20px;
+  font-weight: 700;
+  box-shadow: 0 5px 0 var(--e);
+  transition: transform .1s ease;
+}
+
+.level.done { --c: var(--done); --e: var(--done-edge); color: #fff; background: linear-gradient(180deg, #86d088 0 14%, var(--c) 14%); }
+.level.active { --c: var(--play); --e: var(--play-edge); color: #fff; background: linear-gradient(180deg, #ffc95a 0 14%, var(--c) 14%); transform: translateX(-6px); }
+.level:active { transform: translateY(3px); box-shadow: 0 2px 0 var(--e); }
+
+/* --- console: palette row sitting on the program bar ---------------------- */
+
+.console {
+  position: fixed;
+  z-index: 5;
+  left: 50%;
+  bottom: 18px;
+  transform: translateX(calc(-50% - (var(--levels-w) + 16px) / 2));
+  max-width: calc(100vw - var(--levels-w) - 48px);
+  display: grid;
+  justify-items: center;
+}
+
+.palette {
+  display: flex;
+  gap: 12px;
+  padding: 12px 16px calc(12px + var(--depth));
+  border-radius: var(--r) var(--r) 0 0;
+  background: linear-gradient(180deg, var(--panel-top) 0 6px, var(--panel) 6px);
+  box-shadow: inset 0 -3px 0 var(--panel-edge);
+}
+
+.bar {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 0 14px;
+  border-radius: var(--r);
+  background: linear-gradient(180deg, var(--panel-top) 0 6px, var(--panel) 6px);
+  box-shadow:
+    inset 0 -6px 0 var(--panel-edge),
+    0 10px 0 var(--panel-deep),
+    0 20px 24px rgba(35, 25, 55, .32);
+}
+
+/* Orange end blocks */
+.cap {
+  align-self: stretch;
+  width: 20px;
+  margin: -20px 0 -22px;
+  border-radius: 3px;
+  background: linear-gradient(180deg, #ee8469 0 8px, var(--cap) 8px);
+  box-shadow: inset 0 -7px 0 var(--cap-edge), 0 4px 0 rgba(0, 0, 0, .15);
+}
+.cap:first-child { margin-left: -8px; margin-right: -2px; }
+.cap:last-child { margin-right: -8px; margin-left: -2px; }
+
+.program {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  max-width: 60vw;
+  /* Fixed height: slots and command boxes must never change the console size,
+     otherwise the board area (and the camera framing) shifts */
+  height: calc(var(--tile) + 20px + var(--depth));
+  padding: 0 10px var(--depth);
+  overflow-x: auto;
+  scrollbar-width: none;
+  border-radius: var(--r);
+  background: var(--tray);
+  box-shadow: inset 0 4px 0 var(--tray-deep);
+  transition: background .15s ease, box-shadow .15s ease;
+}
+
+.program.drop-over { background: #c9f1f4; box-shadow: inset 0 4px 0 #9fdde2, inset 0 0 0 3px #2fd8ea; }
+
+.slot {
+  flex: none;
+  width: var(--tile);
+  height: var(--tile);
+  border-radius: var(--r);
+  background: var(--slot);
+  box-shadow: inset 0 6px 0 var(--slot-deep), inset 0 0 0 2px rgba(0, 0, 0, .08);
+}
+
+.step.pop { animation: pop .22s cubic-bezier(.3, 1.6, .5, 1); }
+/* While running: the other instructions dim, the current one lights up */
+.program.running .step { filter: saturate(.45) brightness(.88); transition: filter .15s ease, transform .15s ease, box-shadow .15s ease; }
+.program.running .step.active,
+.step.active {
+  filter: brightness(1.15) saturate(1.15);
+  transform: translateY(-6px);
+  box-shadow:
+    inset 0 0 0 3px #fff,
+    0 var(--depth) 0 var(--e),
+    0 0 0 3px #fff,
+    0 0 22px 6px color-mix(in srgb, var(--c) 75%, #fff);
+  animation: lit .6s ease-in-out infinite alternate;
+}
+.program.running .step.looping { filter: none; animation: loop-pulse .9s ease-in-out infinite alternate; }
+.step.crashed { --c: var(--stop); --e: var(--stop-edge); outline: 0; animation: shake .35s ease-in-out; }
+
+/* Only round things: reset + play */
+.reset, .run { flex: none; display: grid; place-items: center; border-radius: 50%; }
+
+.reset {
+  width: 50px;
+  height: 50px;
+  background: #fbf4e8;
+  box-shadow: inset 0 -5px 0 var(--panel-edge), 0 4px 0 rgba(0, 0, 0, .18);
+}
+.reset svg { width: 26px; height: 26px; fill: none; stroke: var(--ink); stroke-width: 2.8; stroke-linecap: round; stroke-linejoin: round; }
+.reset:active { transform: translateY(3px); }
+
+.run {
+  width: calc(var(--tile) * 1.2);
+  height: calc(var(--tile) * 1.2);
+  background: radial-gradient(circle at 40% 30%, #ffd166, var(--play) 60%);
+  box-shadow: inset 0 -7px 0 rgba(0, 0, 0, .12), inset 0 4px 0 rgba(255, 255, 255, .35), 0 8px 0 var(--play-edge), 0 14px 16px rgba(35, 25, 55, .3);
+  transition: transform .1s ease, filter .15s ease;
+}
+.run svg { width: 50%; height: 50%; filter: drop-shadow(0 2px 0 rgba(0, 0, 0, .15)); }
+@media (hover: hover) { .run:not(:disabled):hover { transform: translateY(-2px); } }
+.run:not(:disabled):active { transform: translateY(6px); box-shadow: inset 0 -7px 0 rgba(0,0,0,.12), 0 2px 0 var(--play-edge); }
+.run.running { background: radial-gradient(circle at 40% 30%, #ff8a7a, var(--stop) 60%); box-shadow: inset 0 -7px 0 rgba(0,0,0,.12), inset 0 4px 0 rgba(255,255,255,.3), 0 8px 0 var(--stop-edge), 0 14px 16px rgba(35,25,55,.3); }
+.run:disabled { cursor: not-allowed; filter: grayscale(1) brightness(1.05); opacity: .55; transform: translateY(4px); box-shadow: inset 0 -7px 0 rgba(0,0,0,.12), 0 4px 0 var(--play-edge); }
+
+/* --- success popup --------------------------------------------------------- */
+
+.success {
+  position: fixed;
+  z-index: 20;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  background: rgba(58, 49, 80, .4);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .18s ease;
+}
+.success.show { opacity: 1; pointer-events: auto; }
+
+.success-card {
+  display: grid;
+  justify-items: center;
+  gap: 14px;
+  padding: 18px 22px 26px;
+  border-radius: var(--r);
+  background: linear-gradient(180deg, var(--panel-top) 0 8px, var(--panel) 8px);
+  box-shadow: inset 0 -8px 0 var(--panel-edge), 0 12px 0 var(--panel-deep), 0 28px 40px rgba(35, 25, 55, .4);
+  transform: scale(.85);
+  transition: transform .25s cubic-bezier(.3, 1.6, .5, 1);
+}
+.success.show .success-card { transform: scale(1); }
+
+.celebration {
+  display: block;
+  width: min(320px, 76vw);
+  aspect-ratio: 4 / 3;
+  border-radius: var(--r);
+  background: linear-gradient(180deg, #9fd3e6, #6aaecd);
+  box-shadow: inset 0 5px 0 rgba(0, 0, 0, .1);
+}
+
+.next {
+  width: 120px;
+  height: 60px;
+  display: grid;
+  place-items: center;
+  border-radius: var(--r);
+  background: linear-gradient(180deg, #ffc95a 0 14%, var(--play) 14%);
+  box-shadow: 0 var(--depth) 0 var(--play-edge), 0 14px 14px rgba(35, 25, 55, .25);
+}
+.next svg { width: 34px; height: 34px; fill: none; stroke: #fff; stroke-width: 3.4; stroke-linecap: square; stroke-linejoin: miter; }
+.next:active { transform: translateY(5px); box-shadow: 0 2px 0 var(--play-edge); }
+
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
+
+@keyframes lit { to { filter: brightness(1.3) saturate(1.2); } }
+@keyframes loop-pulse { from { filter: saturate(.6) brightness(.95); } to { filter: brightness(1.1); } }
+@keyframes pop { from { transform: scale(.4); } }
+@keyframes shake { 20%, 60% { transform: translateX(-5px); } 40%, 80% { transform: translateX(5px); } }
+
+/* --- narrow screens ------------------------------------------------------ */
+
+@media (max-width: 560px) {
+  :root { --tile: clamp(42px, 12vw, 58px); --depth: 6px; --levels-w: 50px; }
+  .levels { right: 8px; gap: 9px; padding: 9px 0 14px; }
+  .level { width: 36px; height: 34px; font-size: 17px; }
+  .hole { left: 4px; right: calc(var(--levels-w) + 12px); }
+  .console { transform: translateX(-50%); max-width: calc(100vw - 16px); bottom: 14px; }
+  .palette { gap: 8px; padding: 9px 10px calc(9px + var(--depth)); }
+  .bar { gap: 8px; padding: 9px 0 11px; }
+  .program { gap: 6px; height: calc(var(--tile) + 16px + var(--depth)); padding: 0 7px var(--depth); }
+  .reset { width: 40px; height: 40px; }
+  .reset svg { width: 21px; height: 21px; }
+  .run { width: var(--tile); height: var(--tile); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; }
+}

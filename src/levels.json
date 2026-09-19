@@ -1,0 +1,21 @@
+{
+  "legend": {
+    ".": "floor",
+    "#": "wall (stone block)",
+    "T": "tree (blocks the robot, like a wall)",
+    "S": "start",
+    "B": "battery (collect every one to win)",
+    "dir": "direction the robot faces at start: up | right | down | left"
+  },
+  "levels": [
+    { "note": "avanzar dos",                    "maxCommands": 2, "loopAvailable": false, "dir": "right", "grid": [".....", ".S.B.", ".....", "....."] },
+    { "note": "otra dirección: abajo",          "maxCommands": 3, "loopAvailable": false, "dir": "down",  "grid": ["..S..", ".....", ".....", "..B.."] },
+    { "note": "avanzar uno y rodear el árbol",  "maxCommands": 5, "loopAvailable": false, "dir": "right", "grid": [".....", "S.TB.", ".....", "....."] },
+    { "note": "dos baterías; arranca mirando abajo para confundir", "maxCommands": 4, "loopAvailable": false, "dir": "down", "grid": ["S.B..", ".....", "..B..", "....."] },
+    { "note": "pasillo largo sin loop",         "maxCommands": 4, "loopAvailable": false, "dir": "right", "grid": [".....", "S...B", ".....", "....."] },
+    { "note": "mismo pasillo, menos memoria: loop obligatorio", "maxCommands": 2, "loopAvailable": true, "dir": "right", "grid": [".....", "S...B", ".....", "....."] },
+    { "note": "practicar el loop hacia abajo",  "maxCommands": 2, "loopAvailable": true,  "dir": "down",  "grid": [".S...", ".....", ".....", ".B..."] },
+    { "note": "zig-zag entre árboles",          "maxCommands": 3, "loopAvailable": true,  "dir": "right", "grid": ["S.T..", "T..T.", ".T..T", "..TBT"] },
+    { "note": "zig-zag entre árboles (al revés)", "maxCommands": 3, "loopAvailable": true, "dir": "right", "grid": ["ST...", "..T..", "T..T.", ".T.BT"] }
+  ]
+}

@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#edf3ff" />
+    <meta name="description" content="Prototipo local para probar niveles y secuencias." />
+    <title>Robot Playtest</title>
+    <link rel="stylesheet" href="styles.css?v=1" />
+  </head>
+  <body>
+    <main class="game">
+      <nav class="levels" aria-label="Elegir nivel">
+        <button type="button" class="level active" data-level="0" aria-label="Nivel 1">1</button>
+        <button type="button" class="level" data-level="1" aria-label="Nivel 2">2</button>
+        <button type="button" class="level" data-level="2" aria-label="Nivel 3">3</button>
+        <button type="button" class="level" data-level="3" aria-label="Nivel 4">4</button>
+        <button type="button" class="level" data-level="4" aria-label="Nivel 5">5</button>
+        <button type="button" class="level" data-level="5" aria-label="Nivel 6">6</button>
+      </nav>
+
+      <section class="board-wrap" aria-label="Tablero">
+        <div id="board" class="board" role="grid" aria-label="Mapa del robot"></div>
+        <div id="success" class="success" aria-hidden="true">
+          <span aria-hidden="true">🔋</span>
+          <button type="button" id="next" aria-label="Siguiente nivel">→</button>
+        </div>
+      </section>
+
+      <section class="controls" aria-label="Instrucciones disponibles">
+        <button type="button" class="command up" data-command="up" aria-label="Agregar arriba">↑</button>
+        <button type="button" class="command left" data-command="left" aria-label="Agregar izquierda">←</button>
+        <button type="button" id="loop-command" class="command loop-command" data-command="loop" aria-label="Agregar repetir para siempre">∞</button>
+        <button type="button" class="command right" data-command="right" aria-label="Agregar derecha">→</button>
+        <button type="button" class="command down" data-command="down" aria-label="Agregar abajo">↓</button>
+      </section>
+
+      <section class="program-area" aria-label="Secuencia de instrucciones">
+        <div id="program" class="program"></div>
+        <div class="actions">
+          <button type="button" id="reset" class="reset" aria-label="Borrar programa y reiniciar">↺</button>
+          <button type="button" id="run" class="run" aria-label="Ejecutar instrucciones">▶</button>
+        </div>
+      </section>
+
+      <div id="status" class="sr-only" aria-live="polite"></div>
+    </main>
+    <script src="game.js?v=1"></script>
+  </body>
+</html>

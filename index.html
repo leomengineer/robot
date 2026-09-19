@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#5d9fc4" />
+    <meta name="description" content="Prototipo 3D para probar niveles y secuencias." />
+    <title>Robot Playtest 3D</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;700&display=swap" rel="stylesheet" />
+  </head>
+  <body>
+    <div id="stage" class="stage" role="img" aria-label="Mapa del robot en 3D"></div>
+    <div id="hole" class="hole" aria-hidden="true"></div>
+
+    <nav id="levels" class="levels" aria-label="Elegir nivel"></nav>
+
+    <section id="console" class="console" aria-label="Programa del robot">
+      <div id="palette" class="palette" aria-label="Instrucciones disponibles"></div>
+      <div class="bar" aria-label="Secuencia de instrucciones">
+        <span class="cap" aria-hidden="true"></span>
+        <button type="button" id="reset" class="reset" aria-label="Borrar programa y reiniciar">
+          <svg viewBox="0 0 24 24"><path d="M5 12a7 7 0 1 0 2.1-5" /><path d="M4 3v5h5" /></svg>
+        </button>
+        <div id="program" class="program"></div>
+        <button type="button" id="run" class="run" aria-label="Ejecutar instrucciones"></button>
+        <span class="cap" aria-hidden="true"></span>
+      </div>
+    </section>
+
+    <div id="success" class="success" aria-hidden="true" inert>
+      <div class="success-card">
+        <canvas id="celebration" class="celebration" aria-label="El robot celebra" role="img"></canvas>
+        <button type="button" id="next" class="next" aria-label="Siguiente nivel">
+          <svg viewBox="0 0 24 24"><path d="M5 12h12M12 6l6 6-6 6" /></svg>
+        </button>
+      </div>
+    </div>
+
+    <div id="status" class="sr-only" aria-live="polite"></div>
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>
