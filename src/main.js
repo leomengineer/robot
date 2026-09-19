@@ -32,6 +32,7 @@ const ui = {
   levels: document.querySelector("#levels"),
   palette: document.querySelector("#palette"),
   program: document.querySelector("#program"),
+  leds: document.querySelector("#leds"),
   run: document.querySelector("#run"),
   reset: document.querySelector("#reset"),
   success: document.querySelector("#success"),
@@ -115,6 +116,7 @@ function renderProgram(activeIndex = -1, crashed = false) {
     slot.setAttribute("aria-hidden", "true");
     ui.program.appendChild(slot);
   }
+  renderLeds(activeIndex, crashed);
   updatePaletteAvailability();
 }
 
@@ -123,6 +125,22 @@ function highlightStep(activeIndex) {
   ui.program.querySelectorAll(".step").forEach((button, index) => {
     button.classList.toggle("active", index === activeIndex);
     button.classList.toggle("looping", activeIndex !== -1 && state.program[index] === "loop");
+  });
+  renderLeds(activeIndex);
+}
+
+// One LED per memory slot on the robot's visor: off (empty), green (loaded),
+// cyan (running now), red (crashed here)
+function renderLeds(activeIndex = -1, crashed = false) {
+  const { maxCommands } = currentLevel();
+  if (ui.leds.children.length !== maxCommands) {
+    ui.leds.replaceChildren(...Array.from({ length: maxCommands }, () => document.createElement("span")));
+  }
+  [...ui.leds.children].forEach((led, i) => {
+    led.className = "led";
+    if (i < state.program.length) led.classList.add("loaded");
+    if (i === activeIndex) led.classList.add(crashed ? "crashed" : "active");
+    else if (activeIndex !== -1 && state.program[i] === "loop") led.classList.add("looping");
   });
 }
 
@@ -142,6 +160,7 @@ function renderPath() {
 function setRunButton(running) {
   ui.run.classList.toggle("running", running);
   ui.program.classList.toggle("running", running);
+  ui.console.classList.toggle("busy", running); // antenna blinks while the program runs
   // Out of battery: the program has to change (or be reset) before running again
   ui.run.disabled = state.poweredOff && !running;
   ui.run.innerHTML = running ? ICONS.stop : ICONS.play;
@@ -187,7 +206,7 @@ function makeDraggable(button, command) {
     if (ghost) {
       ghost.style.left = `${event.clientX}px`;
       ghost.style.top = `${event.clientY}px`;
-      ui.program.classList.toggle("drop-over", overProgram(event) && canAdd(currentLevel(), state.program, command));
+      ui.program.closest("[data-drop]").classList.toggle("drop-over", overProgram(event) && canAdd(currentLevel(), state.program, command));
     }
   });
 
@@ -200,7 +219,7 @@ function makeDraggable(button, command) {
       ghost.remove();
       ghost = null;
       document.body.classList.remove("dragging");
-      ui.program.classList.remove("drop-over");
+      ui.program.closest("[data-drop]").classList.remove("drop-over");
     }
     start = null;
   };
@@ -217,7 +236,7 @@ function makeDraggable(button, command) {
 }
 
 function overProgram(event) {
-  const r = ui.program.closest(".bar").getBoundingClientRect();
+  const r = ui.program.closest("[data-drop]").getBoundingClientRect();
   const pad = 30;
   return event.clientX > r.left - pad && event.clientX < r.right + pad && event.clientY > r.top - pad && event.clientY < r.bottom + pad;
 }
