@@ -3,9 +3,15 @@ import "./styles.css";
 import data from "./levels.json";
 import { COMMANDS, canAdd, parseLevel, removeAt, simulate } from "./logic.js";
 import { BoxWorld } from "./render.js";
+import { PALETTE } from "./models.js";
 import { Celebration } from "./celebration.js";
 
 const LEVELS = data.levels.map(parseLevel);
+
+// The console is painted with the 3D robot's own colours, so both always match
+for (const [name, key] of Object.entries({ body: "robotBody", grey: "robotGrey", visor: "visor", eye: "eye" })) {
+  document.documentElement.style.setProperty(`--robot-${name}`, `#${PALETTE[key].toString(16).padStart(6, "0")}`);
+}
 const PALETTE_ORDER = ["up", "left", "right", "down", "loop"];
 
 const ICONS = {

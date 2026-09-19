@@ -5,12 +5,6 @@
   --panel-edge: #d5c3a4;
   --panel-deep: #4a3f62;
   --panel-deeper: #3a3150;
-  --tray: #ddccb0;
-  --tray-deep: #c9b594;
-  --cap: #e2664c;
-  --cap-edge: #b44a36;
-  --slot: #8d8192;
-  --slot-deep: #6f6376;
 
   --up: #27a6b8;      --up-edge: #1a7886;
   --left: #8b62d8;    --left-edge: #6343a8;
@@ -166,6 +160,15 @@ body.dragging, body.dragging * { cursor: grabbing !important; }
   max-width: calc(100vw - var(--levels-w) - 48px);
   display: grid;
   justify-items: center;
+
+  /* Robot colours (--robot-* come from the 3D model's palette, set in main.js) */
+  --shell: var(--robot-body, #f3eee6);
+  --shell-top: color-mix(in srgb, var(--shell) 45%, #fff);
+  --shell-edge: var(--robot-grey, #c9ccd3);
+  --shell-deep: color-mix(in srgb, var(--robot-grey, #c9ccd3) 60%, #3a3f4c);
+  --visor: var(--robot-visor, #283042);
+  --visor-deep: color-mix(in srgb, var(--visor) 70%, #000);
+  --eye: var(--robot-eye, #6ff3ff);
 }
 
 .palette {
@@ -173,8 +176,8 @@ body.dragging, body.dragging * { cursor: grabbing !important; }
   gap: 12px;
   padding: 12px 16px calc(12px + var(--depth));
   border-radius: var(--r) var(--r) 0 0;
-  background: linear-gradient(180deg, var(--panel-top) 0 6px, var(--panel) 6px);
-  box-shadow: inset 0 -3px 0 var(--panel-edge);
+  background: linear-gradient(180deg, var(--shell-top) 0 6px, var(--shell) 6px);
+  box-shadow: inset 0 -3px 0 var(--shell-edge);
 }
 
 .bar {
@@ -182,26 +185,14 @@ body.dragging, body.dragging * { cursor: grabbing !important; }
   display: flex;
   align-items: center;
   gap: 14px;
-  padding: 12px 0 14px;
+  padding: 12px 18px 16px;
   border-radius: var(--r);
-  background: linear-gradient(180deg, var(--panel-top) 0 6px, var(--panel) 6px);
+  background: linear-gradient(180deg, var(--shell-top) 0 6px, var(--shell) 6px);
   box-shadow:
-    inset 0 -6px 0 var(--panel-edge),
-    0 10px 0 var(--panel-deep),
-    0 20px 24px rgba(35, 25, 55, .32);
+    inset 0 -8px 0 var(--shell-edge),
+    0 8px 0 var(--shell-deep),
+    0 20px 24px rgba(35, 25, 55, .3);
 }
-
-/* Orange end blocks */
-.cap {
-  align-self: stretch;
-  width: 20px;
-  margin: -20px 0 -22px;
-  border-radius: 3px;
-  background: linear-gradient(180deg, #ee8469 0 8px, var(--cap) 8px);
-  box-shadow: inset 0 -7px 0 var(--cap-edge), 0 4px 0 rgba(0, 0, 0, .15);
-}
-.cap:first-child { margin-left: -8px; margin-right: -2px; }
-.cap:last-child { margin-right: -8px; margin-left: -2px; }
 
 .program {
   display: flex;
@@ -215,20 +206,21 @@ body.dragging, body.dragging * { cursor: grabbing !important; }
   overflow-x: auto;
   scrollbar-width: none;
   border-radius: var(--r);
-  background: var(--tray);
-  box-shadow: inset 0 4px 0 var(--tray-deep);
+  /* Looks like the robot's visor: dark screen, eye-coloured highlights */
+  background: radial-gradient(120% 100% at 50% 0%, color-mix(in srgb, var(--visor) 82%, #fff) 0%, var(--visor) 55%, var(--visor-deep) 100%);
+  box-shadow: inset 0 5px 10px rgba(0, 0, 0, .45), inset 0 0 0 3px color-mix(in srgb, var(--visor) 75%, #fff);
   transition: background .15s ease, box-shadow .15s ease;
 }
 
-.program.drop-over { background: #c9f1f4; box-shadow: inset 0 4px 0 #9fdde2, inset 0 0 0 3px #2fd8ea; }
+.program.drop-over { box-shadow: inset 0 5px 10px rgba(0, 0, 0, .45), inset 0 0 0 3px var(--eye), 0 0 20px color-mix(in srgb, var(--eye) 70%, transparent); }
 
 .slot {
   flex: none;
   width: var(--tile);
   height: var(--tile);
   border-radius: var(--r);
-  background: var(--slot);
-  box-shadow: inset 0 6px 0 var(--slot-deep), inset 0 0 0 2px rgba(0, 0, 0, .08);
+  background: color-mix(in srgb, var(--visor) 78%, #fff);
+  box-shadow: inset 0 6px 0 color-mix(in srgb, var(--visor) 92%, #fff), inset 0 0 0 2px color-mix(in srgb, var(--visor) 68%, #fff);
 }
 
 .step.pop { animation: pop .22s cubic-bezier(.3, 1.6, .5, 1); }
@@ -241,8 +233,8 @@ body.dragging, body.dragging * { cursor: grabbing !important; }
   box-shadow:
     inset 0 0 0 3px #fff,
     0 var(--depth) 0 var(--e),
-    0 0 0 3px #fff,
-    0 0 22px 6px color-mix(in srgb, var(--c) 75%, #fff);
+    0 0 0 3px var(--eye),
+    0 0 22px 6px color-mix(in srgb, var(--eye) 70%, transparent);
   animation: lit .6s ease-in-out infinite alternate;
 }
 .program.running .step.looping { filter: none; animation: loop-pulse .9s ease-in-out infinite alternate; }
@@ -254,8 +246,8 @@ body.dragging, body.dragging * { cursor: grabbing !important; }
 .reset {
   width: 50px;
   height: 50px;
-  background: #fbf4e8;
-  box-shadow: inset 0 -5px 0 var(--panel-edge), 0 4px 0 rgba(0, 0, 0, .18);
+  background: var(--shell-top);
+  box-shadow: inset 0 -5px 0 var(--shell-edge), 0 4px 0 rgba(0, 0, 0, .18);
 }
 .reset svg { width: 26px; height: 26px; fill: none; stroke: var(--ink); stroke-width: 2.8; stroke-linecap: round; stroke-linejoin: round; }
 .reset:active { transform: translateY(3px); }
@@ -338,7 +330,7 @@ body.dragging, body.dragging * { cursor: grabbing !important; }
   .hole { left: 4px; right: calc(var(--levels-w) + 12px); }
   .console { transform: translateX(-50%); max-width: calc(100vw - 16px); bottom: 14px; }
   .palette { gap: 8px; padding: 9px 10px calc(9px + var(--depth)); }
-  .bar { gap: 8px; padding: 9px 0 11px; }
+  .bar { gap: 8px; padding: 9px 10px 12px; }
   .program { gap: 6px; height: calc(var(--tile) + 16px + var(--depth)); padding: 0 7px var(--depth); }
   .reset { width: 40px; height: 40px; }
   .reset svg { width: 21px; height: 21px; }
