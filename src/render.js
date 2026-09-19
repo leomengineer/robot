@@ -369,6 +369,104 @@ export class BoxWorld {
     this.bumped = null;
   }
 
+  // --- idle antics: little things the robot does when nobody is playing ---
+
+  async idleAntic() {
+    if (reducedMotion || this.poweredOff || this.tweens.length || !this.robot) return;
+    const gen = this.generation;
+    const alive = () => gen === this.generation;
+    const antics = [this.lookAround, this.hopSpin, this.lookAtYou, this.wiggle];
+    await antics[Math.floor(Math.random() * antics.length)].call(this, alive);
+    if (!alive()) return;
+    // Always end exactly where it started
+    const { robot } = this;
+    robot.rotation.set(0, headingAngle(this.heading), 0);
+    robot.position.y = 0;
+    robot.scale.set(1, 1, 1);
+    robot.userData.chassis.rotation.set(0, 0, 0);
+    robot.userData.eyes.forEach((e) => e.scale.set(1, 1, 1));
+  }
+
+  // Tank-turn in place to an absolute angle, wheels rolling
+  async spinTo(angle, ms) {
+    const { robot } = this;
+    const start = robot.rotation.y;
+    const delta = shortestDelta(start, angle);
+    let last = 0;
+    await this.tween(ms, (t) => {
+      const k = smooth(t);
+      robot.rotation.y = start + delta * k;
+      const d = (k - last) * delta * robot.userData.trackHalf;
+      this.spinWheels(-d, d);
+      last = k;
+    });
+  }
+
+  pause(ms) {
+    return this.tween(ms, () => {});
+  }
+
+  // Looks to one side, then the other, then back
+  async lookAround(alive) {
+    const base = headingAngle(this.heading);
+    const side = Math.random() < 0.5 ? 1 : -1;
+    for (const offset of [0.9 * side, -0.9 * side, 0]) {
+      await this.spinTo(base + offset, 420);
+      if (!alive()) return;
+      await this.pause(offset === 0 ? 0 : 450);
+      if (!alive()) return;
+    }
+  }
+
+  // Crouches, hops and spins a full turn in the air, lands with a squash
+  async hopSpin(alive) {
+    const { robot } = this;
+    const base = robot.rotation.y;
+    await this.tween(160, (t) => robot.scale.set(1 + 0.08 * t, 1 - 0.14 * t, 1 + 0.08 * t));
+    if (!alive()) return;
+    await this.tween(620, (t) => {
+      robot.position.y = Math.sin(Math.PI * t) * 0.45;
+      robot.rotation.y = base + smooth(t) * Math.PI * 2;
+      const crouch = Math.max(0, 1 - t * 4); // springs out of the crouch in the first quarter
+      const stretch = 0.06 * Math.sin(Math.PI * t); // a little taller mid-air
+      robot.scale.set(1 + 0.08 * crouch, 1 - 0.14 * crouch + stretch, 1 + 0.08 * crouch);
+      this.spinWheels(0.08, 0.08);
+    });
+    if (!alive()) return;
+    await this.tween(200, (t) => {
+      const squash = Math.sin(Math.PI * t) * 0.12;
+      robot.position.y = 0;
+      robot.scale.set(1 + squash * 0.6, 1 - squash, 1 + squash * 0.6);
+    });
+  }
+
+  // Turns to face the player, blinks twice, turns back
+  async lookAtYou(alive) {
+    const eyes = this.robot.userData.eyes;
+    await this.spinTo(0, 450); // facing +Z = toward the camera
+    if (!alive()) return;
+    await this.tween(700, (t) => {
+      const blink = t < 0.5 ? Math.sin(Math.PI * t * 2) : Math.sin(Math.PI * (t - 0.5) * 2);
+      eyes.forEach((e) => (e.scale.y = 1 - blink * 0.9));
+    });
+    if (!alive()) return;
+    await this.pause(350);
+    if (!alive()) return;
+    await this.spinTo(headingAngle(this.heading), 450);
+  }
+
+  // Happy shimmy side to side, antenna flashing
+  async wiggle(alive) {
+    const { chassis, tipMat } = this.robot.userData;
+    await this.tween(900, (t) => {
+      chassis.rotation.z = Math.sin(t * Math.PI * 6) * 0.14 * Math.sin(Math.PI * t);
+      tipMat.emissiveIntensity = 0.4 + (Math.sin(t * Math.PI * 8) > 0 ? 1.2 : 0);
+    });
+    if (!alive()) return;
+    chassis.rotation.z = 0;
+    tipMat.emissiveIntensity = 0.4;
+  }
+
   // --- tween engine ---------------------------------------------------------
 
   tween(duration, update) {
@@ -379,6 +477,7 @@ export class BoxWorld {
 
   // Drops running tweens and resolves their promises so awaiting code can bail out.
   cancel() {
+    this.generation = (this.generation ?? 0) + 1; // lets multi-step animations (idle antics) notice and stop
     const pending = this.tweens;
     this.tweens = [];
     pending.forEach((tw) => tw.resolve());

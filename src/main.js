@@ -4,6 +4,7 @@ import data from "./levels.json";
 import { COMMANDS, canAdd, parseLevel, removeAt, simulate } from "./logic.js";
 import { BoxWorld } from "./render.js";
 import { PALETTE } from "./models.js";
+import { Intro } from "./intro.js";
 import { Celebration } from "./celebration.js";
 
 const LEVELS = data.levels.map(parseLevel);
@@ -43,6 +44,8 @@ const ui = {
   success: document.querySelector("#success"),
   next: document.querySelector("#next"),
   status: document.querySelector("#status"),
+  intro: document.querySelector("#intro"),
+  start: document.querySelector("#start"),
 };
 
 // The board is framed in the space above the console and left of the level column
@@ -56,6 +59,7 @@ syncHole();
 
 const world = new BoxWorld(ui.stage, ui.hole);
 const celebration = new Celebration(ui.celebration);
+if (import.meta.env.DEV) window.__world = world; // handy for poking at animations from the console
 const STEP_LIGHT_MS = 160; // instruction glows before the robot acts on it
 const STEP_PAUSE_MS = 200; // robot rests on each cell before the next instruction
 const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
@@ -159,7 +163,8 @@ function showSuccess(show) {
   ui.success.classList.toggle("show", show);
   ui.success.setAttribute("aria-hidden", String(!show));
   ui.success.inert = !show;
-  world.paused = show; // the popup covers the board; no need to keep rendering it
+  // the popup (or the start screen) covers the board; no need to keep rendering it
+  world.paused = show || !ui.intro.classList.contains("hide");
   if (show) celebration.start();
   else celebration.stop();
 }
@@ -328,6 +333,13 @@ ui.reset.addEventListener("click", () => {
 ui.next.addEventListener("click", () => loadLevel((state.level + 1) % LEVELS.length));
 
 window.addEventListener("keydown", (event) => {
+  if (!ui.intro.classList.contains("hide")) {
+    if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault();
+      startGame();
+    }
+    return; // the game ignores keys until it has started
+  }
   if (event.target.closest?.("button") && (event.key === "Enter" || event.key === " ")) return;
   const keys = { ArrowUp: "up", ArrowRight: "right", ArrowDown: "down", ArrowLeft: "left", l: "loop" };
   if (keys[event.key]) {
@@ -339,6 +351,40 @@ window.addEventListener("keydown", (event) => {
     runProgram();
   }
 });
+
+// Idle antics: after a few quiet seconds the robot looks around, hops, waves...
+// Any tap or key press counts as activity and pushes the next one back.
+let lastActivity = performance.now();
+let idleDelay = 5000;
+for (const type of ["pointerdown", "keydown"]) {
+  window.addEventListener(type, () => (lastActivity = performance.now()), true);
+}
+setInterval(() => {
+  const busy = state.running || state.poweredOff || ui.success.classList.contains("show") || !ui.intro.classList.contains("hide") || document.hidden;
+  if (busy) lastActivity = performance.now();
+  if (busy || performance.now() - lastActivity < idleDelay) return;
+  lastActivity = performance.now();
+  idleDelay = 5000 + Math.random() * 5000;
+  world.idleAntic();
+}, 500);
+
+// --- start screen ----------------------------------------------------------
+
+const intro = new Intro(document.querySelector("#intro-canvas"));
+world.paused = true; // the board stays still behind the start screen
+intro.start();
+ui.start.focus();
+
+function startGame() {
+  if (ui.intro.classList.contains("hide")) return;
+  ui.intro.classList.add("hide");
+  ui.intro.inert = true;
+  intro.stop();
+  world.paused = false;
+  lastActivity = performance.now();
+  ui.run.focus();
+}
+ui.start.addEventListener("click", startGame);
 
 buildPalette();
 loadLevel(0);
