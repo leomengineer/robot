@@ -4,8 +4,16 @@ import data from "./levels.json";
 import { COMMANDS, canAdd, parseLevel, removeAt, simulate } from "./logic.js";
 import { BoxWorld } from "./render.js";
 import { Celebration } from "./celebration.js";
+import { PALETTE } from "./models.js";
 
 const LEVELS = data.levels.map(parseLevel);
+// The console robot is painted with the 3D robot's own colours, so both always match
+for (const [name, key] of Object.entries({
+  body: "robotBody", grey: "robotGrey", visor: "visor", eye: "eye", tire: "tire", hub: "hub", antenna: "antennaTip",
+})) {
+  document.documentElement.style.setProperty(`--robot-${name}`, `#${PALETTE[key].toString(16).padStart(6, "0")}`);
+}
+
 // The robot's head is sized once for the largest memory in the game; levels only change the slots inside
 document.documentElement.style.setProperty("--max-slots", Math.max(...LEVELS.map((l) => l.maxCommands)));
 
