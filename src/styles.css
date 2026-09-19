@@ -254,9 +254,13 @@ body.dragging, body.dragging * { cursor: grabbing !important; }
 .led.crashed { background: var(--stop); box-shadow: 0 0 10px 2px rgba(229, 88, 76, .9); }
 
 .program {
+  --slot-gap: 10px;
   display: flex;
   align-items: center;
-  gap: 10px;
+  justify-content: center;
+  gap: var(--slot-gap);
+  /* Fixed width (largest memory in the game), so the head never resizes between levels */
+  width: calc(var(--max-slots, 5) * var(--tile) + (var(--max-slots, 5) - 1) * var(--slot-gap) + 8px);
   max-width: 60vw;
   /* Fixed height: slots and command boxes must never change the console size,
      otherwise the board area (and the camera framing) shifts */
@@ -428,7 +432,7 @@ body.dragging, body.dragging * { cursor: grabbing !important; }
   .screen { padding: 8px 10px 4px; gap: 6px; border-radius: 14px; }
   .leds { gap: 10px; height: 11px; }
   .led { width: 11px; height: 11px; }
-  .program { gap: 6px; height: calc(var(--tile) + 14px + var(--depth)); padding: 0 2px var(--depth); }
+  .program { --slot-gap: 6px; height: calc(var(--tile) + 14px + var(--depth)); padding: 0 2px var(--depth); max-width: calc(100vw - 80px); }
   .body { gap: 8px; padding: 12px 12px 14px; border-radius: 18px; }
   .palette { gap: 6px; }
   .wheel { width: 48px; height: 20px; bottom: -14px; }

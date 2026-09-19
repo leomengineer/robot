@@ -6,6 +6,9 @@ import { BoxWorld } from "./render.js";
 import { Celebration } from "./celebration.js";
 
 const LEVELS = data.levels.map(parseLevel);
+// The robot's head is sized once for the largest memory in the game; levels only change the slots inside
+document.documentElement.style.setProperty("--max-slots", Math.max(...LEVELS.map((l) => l.maxCommands)));
+
 const PALETTE_ORDER = ["up", "left", "right", "down", "loop"];
 
 const ICONS = {
