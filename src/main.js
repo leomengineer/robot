@@ -43,11 +43,20 @@ const ui = {
   status: document.querySelector("#status"),
 };
 
-// The board is framed in the space above the console and left of the level column
+// The board is framed in the space the console leaves free:
+// to its right on wide landscape screens, above it everywhere else.
+const sideLayout = window.matchMedia("(min-width: 900px) and (orientation: landscape)");
 function syncHole() {
-  const top = ui.console.getBoundingClientRect().top;
-  ui.hole.style.bottom = `${window.innerHeight - top + 12}px`;
+  const rect = ui.console.getBoundingClientRect();
+  if (sideLayout.matches) {
+    ui.hole.style.left = `${rect.right + 32}px`;
+    ui.hole.style.bottom = "";
+  } else {
+    ui.hole.style.left = "";
+    ui.hole.style.bottom = `${window.innerHeight - rect.top + 12}px`;
+  }
 }
+sideLayout.addEventListener("change", syncHole);
 new ResizeObserver(syncHole).observe(ui.console);
 window.addEventListener("resize", syncHole);
 syncHole();
