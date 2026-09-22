@@ -124,7 +124,11 @@ body.dragging, body.dragging * { cursor: grabbing !important; }
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 12px;
+  /* the column has to fit however many levels there are, on short screens too */
+  gap: clamp(5px, 1.5vh, 12px);
+  max-height: calc(100vh - 24px);
+  overflow-y: auto;
+  scrollbar-width: none;
   padding: 12px 0 18px;
   border-radius: var(--r);
   background: var(--panel-deep);
@@ -134,8 +138,9 @@ body.dragging, body.dragging * { cursor: grabbing !important; }
 .level {
   --c: var(--panel);
   --e: var(--panel-edge);
+  flex: none;
   width: 44px;
-  height: 40px;
+  height: clamp(30px, 5.2vh, 40px);
   border-radius: var(--r);
   background: linear-gradient(180deg, var(--panel-top) 0 14%, var(--c) 14%);
   color: var(--ink);

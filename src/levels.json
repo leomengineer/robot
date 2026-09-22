@@ -10,8 +10,10 @@
   "levels": [
     { "note": "avanzar dos",                    "maxCommands": 2, "loopAvailable": false, "dir": "right", "grid": [".....", ".S.B.", ".....", "....."] },
     { "note": "otra dirección: abajo",          "maxCommands": 3, "loopAvailable": false, "dir": "down",  "grid": ["..S..", ".....", ".....", "..B.."] },
-    { "note": "avanzar uno y rodear el árbol",  "maxCommands": 5, "loopAvailable": false, "dir": "right", "grid": [".....", "S.TB.", ".....", "....."] },
     { "note": "dos baterías; arranca mirando abajo para confundir", "maxCommands": 4, "loopAvailable": false, "dir": "down", "grid": ["S.B..", ".....", "..B..", "....."] },
+    { "note": "avanzar uno y rodear el árbol",  "maxCommands": 5, "loopAvailable": false, "dir": "right", "grid": [".....", "S.TB.", ".....", "....."] },
+    { "note": "el desvío de arriba está tapado: hay que rodear por abajo", "maxCommands": 6, "loopAvailable": false, "dir": "right", "grid": ["..T..", "S.T.B", ".....", "....."] },
+    { "note": "slalom: por arriba de un árbol y por abajo del otro", "maxCommands": 6, "loopAvailable": false, "dir": "right", "grid": ["...T.", "ST..B", "..T..", "....."] },
     { "note": "pasillo largo sin loop",         "maxCommands": 4, "loopAvailable": false, "dir": "right", "grid": [".....", "S...B", ".....", "....."] },
     { "note": "mismo pasillo, menos memoria: loop obligatorio", "maxCommands": 2, "loopAvailable": true, "dir": "right", "grid": [".....", "S...B", ".....", "....."] },
     { "note": "practicar el loop hacia abajo",  "maxCommands": 2, "loopAvailable": true,  "dir": "down",  "grid": [".S...", ".....", ".....", ".B..."] },
