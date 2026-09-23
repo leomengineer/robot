@@ -120,8 +120,10 @@ export class Intro {
 
   start() {
     this.resize();
-    this.onResize ??= () => this.resize();
-    window.addEventListener("resize", this.onResize);
+    // Watching the canvas also covers window resizes, and fires once with the
+    // real size when the layout finally gives the canvas its measurements.
+    this.observer ??= new ResizeObserver(() => this.resize());
+    this.observer.observe(this.canvas);
     this.t0 = performance.now();
     this.last = { pos: new THREE.Vector3(), yaw: 0, first: true };
     this.renderer.setAnimationLoop(() => this.frame());
@@ -129,14 +131,17 @@ export class Intro {
 
   stop() {
     this.renderer.setAnimationLoop(null);
-    window.removeEventListener("resize", this.onResize);
+    this.observer?.disconnect();
   }
 
   resize() {
     const { clientWidth: w, clientHeight: h } = this.canvas;
-    if (!w || !h) return;
-    this.renderer.setSize(w, h, false);
-    this.camera.aspect = w / h;
+    // The canvas can still measure 0 while the page lays out; the camera has to
+    // end up valid anyway, or the first frame throws and the loop never draws.
+    if (w && h) {
+      this.renderer.setSize(w, h, false);
+      this.camera.aspect = w / h;
+    }
     // Keep the whole island in frame on narrow (portrait) screens too
     const dist = 11.5 * Math.max(1, 1.1 / this.camera.aspect);
     this.baseCamera = new THREE.Vector3(0, 0.62, 0.78).normalize().multiplyScalar(dist);
