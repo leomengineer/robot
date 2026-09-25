@@ -112,6 +112,28 @@ svg .line { fill: none; stroke: #fff; stroke-width: 3; stroke-linecap: square; s
 
 body.dragging, body.dragging * { cursor: grabbing !important; }
 
+/* --- step-by-step toggle (top-left corner, out of the way) --------------- */
+
+.speed {
+  position: fixed;
+  z-index: 5;
+  top: 16px;
+  left: 16px;
+  width: 54px;
+  height: 54px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--panel);
+  box-shadow: inset 0 -5px 0 var(--panel-edge), 0 6px 12px rgba(35, 25, 55, .25);
+  transition: box-shadow .15s ease, transform .1s ease;
+}
+/* the turtle sits in the lower part of its image; lift it to the middle of the button face */
+.speed img { width: 80%; height: 80%; transform: translateY(-22%); pointer-events: none; filter: grayscale(1) opacity(.5); transition: filter .15s ease, transform .2s ease; }
+.speed[aria-pressed="true"] { box-shadow: inset 0 -5px 0 var(--panel-edge), 0 0 0 3px var(--done), 0 6px 12px rgba(35, 25, 55, .25); }
+.speed[aria-pressed="true"] img { filter: none; transform: translateY(-22%) scale(1.08); }
+.speed:active { transform: translateY(3px); }
+
 /* --- level column (right) ---------------------------------------------- */
 
 .levels {
@@ -257,6 +279,7 @@ body.dragging, body.dragging * { cursor: grabbing !important; }
 .reset svg { width: 26px; height: 26px; fill: none; stroke: var(--ink); stroke-width: 2.8; stroke-linecap: round; stroke-linejoin: round; }
 .reset:active { transform: translateY(3px); }
 
+
 .run {
   width: calc(var(--tile) * 1.2);
   height: calc(var(--tile) * 1.2);
@@ -379,6 +402,7 @@ body.dragging, body.dragging * { cursor: grabbing !important; }
   .bar { gap: 8px; padding: 9px 10px 12px; }
   .program { gap: 6px; height: calc(var(--tile) + 16px + var(--depth)); padding: 0 7px var(--depth); }
   .reset { width: 40px; height: 40px; }
+  .speed { top: 10px; left: 10px; width: 46px; height: 46px; }
   .reset svg { width: 21px; height: 21px; }
   .run { width: var(--tile); height: var(--tile); }
 }

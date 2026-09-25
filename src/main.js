@@ -29,7 +29,11 @@ const state = {
   poweredOff: false,
   execution: 0,
   completed: new Set(),
+  slow: false,
 };
+try {
+  state.slow = localStorage.getItem("robot.slow") === "1";
+} catch {}
 
 const ui = {
   stage: document.querySelector("#stage"),
@@ -41,6 +45,7 @@ const ui = {
   program: document.querySelector("#program"),
   run: document.querySelector("#run"),
   reset: document.querySelector("#reset"),
+  speed: document.querySelector("#speed"),
   success: document.querySelector("#success"),
   next: document.querySelector("#next"),
   status: document.querySelector("#status"),
@@ -62,6 +67,9 @@ const celebration = new Celebration(ui.celebration);
 if (import.meta.env.DEV) window.__world = world; // handy for poking at animations from the console
 const STEP_LIGHT_MS = 160; // instruction glows before the robot acts on it
 const STEP_PAUSE_MS = 200; // robot rests on each cell before the next instruction
+// Step-by-step mode: moves play slower and the robot rests longer, so each instruction reads on its own
+const SLOW = { timeScale: 2, lightMs: 550, pauseMs: 650 };
+const pace = () => (state.slow ? SLOW : { timeScale: 1, lightMs: STEP_LIGHT_MS, pauseMs: STEP_PAUSE_MS });
 const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 const currentLevel = () => LEVELS[state.level];
 
@@ -158,6 +166,15 @@ function setRunButton(running) {
   ui.run.setAttribute("aria-label", running ? "Detener" : "Ejecutar instrucciones");
 }
 
+function setSlow(slow) {
+  state.slow = slow;
+  ui.speed.setAttribute("aria-pressed", String(slow));
+  if (state.running) world.timeScale = pace().timeScale; // takes effect from the next move
+  try {
+    localStorage.setItem("robot.slow", slow ? "1" : "0");
+  } catch {}
+}
+
 function showSuccess(show) {
   if (!show && ui.success.contains(document.activeElement)) ui.run.focus();
   ui.success.classList.toggle("show", show);
@@ -239,6 +256,7 @@ function resetRobot() {
   state.execution += 1;
   state.running = false;
   state.poweredOff = false;
+  world.timeScale = 1;
   setRunButton(false);
   showSuccess(false);
   ui.status.textContent = "";
@@ -267,6 +285,7 @@ function addCommand(command) {
 async function powerDown(activeIndex = -1) {
   state.running = false;
   state.poweredOff = true;
+  world.timeScale = 1;
   setRunButton(false);
   if (document.activeElement === ui.run) ui.reset.focus();
   ui.status.textContent = "El robot se quedó sin batería";
@@ -284,6 +303,7 @@ async function runProgram() {
   if (!steps.length) return;
 
   state.running = true;
+  world.timeScale = pace().timeScale;
   setRunButton(true);
   renderPath();
   renderProgram();
@@ -291,7 +311,7 @@ async function runProgram() {
   // One instruction at a time: light it up, then turn, drive one cell and stop.
   for (const step of steps) {
     highlightStep(step.commandIndex);
-    await delay(STEP_LIGHT_MS);
+    await delay(pace().lightMs);
     if (!alive()) return;
     await world.turnTo(step.heading);
     if (!alive()) return;
@@ -304,13 +324,14 @@ async function runProgram() {
     if (!alive()) return;
     if (step.collect) await world.pickUp(step.collect);
     if (!alive()) return;
-    await delay(STEP_PAUSE_MS);
+    await delay(pace().pauseMs);
     if (!alive()) return;
   }
   highlightStep(-1);
 
   if (outcome !== "win") return powerDown();
 
+  world.timeScale = 1;
   await world.celebrate();
   if (!alive()) return;
   state.running = false;
@@ -330,6 +351,7 @@ ui.reset.addEventListener("click", () => {
   state.program = [];
   resetRobot();
 });
+ui.speed.addEventListener("click", () => setSlow(!state.slow));
 ui.next.addEventListener("click", () => loadLevel((state.level + 1) % LEVELS.length));
 
 window.addEventListener("keydown", (event) => {
@@ -387,4 +409,5 @@ function startGame() {
 ui.start.addEventListener("click", startGame);
 
 buildPalette();
+setSlow(state.slow);
 loadLevel(0);

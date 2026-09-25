@@ -469,9 +469,10 @@ export class BoxWorld {
 
   // --- tween engine ---------------------------------------------------------
 
+  // timeScale > 1 plays the robot's moves in slow motion (step-by-step mode)
   tween(duration, update) {
     return new Promise((resolve) => {
-      this.tweens.push({ start: performance.now(), duration: reducedMotion ? 1 : duration, update, resolve });
+      this.tweens.push({ start: performance.now(), duration: reducedMotion ? 1 : duration * (this.timeScale ?? 1), update, resolve });
     });
   }
 
