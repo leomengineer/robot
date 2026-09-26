@@ -15,7 +15,10 @@
   --stop: #e5584c;    --stop-edge: #a8392f;
   --done: #69bd6b;    --done-edge: #468a4a;
 
-  --tile: clamp(50px, min(8vh, 13vw), 72px);
+  /* Instruction size: never wider than the room the console actually has.
+     --max-slots (the biggest memory in the game) is set from JS. */
+  --slots: var(--max-slots, 6);
+  --tile: max(30px, min(clamp(50px, min(8vh, 13vw), 72px), calc((100vw - 222px - var(--slots) * 10px) / (var(--slots) + 1.2))));
   --depth: 7px;         /* how far box faces stick out */
   --r: 4px;             /* boxes get a hint of bevel, nothing rounder */
   --levels-w: 64px;
@@ -393,8 +396,18 @@ body.dragging, body.dragging * { cursor: grabbing !important; }
 /* --- narrow screens ------------------------------------------------------ */
 
 @media (max-width: 560px) {
-  :root { --tile: clamp(42px, 12vw, 58px); --depth: 6px; --levels-w: 50px; }
-  .levels { right: 8px; gap: 9px; padding: 9px 0 14px; }
+  :root {
+    /* On phones the visor gets a row to itself, so only the slots have to fit across */
+    --tile: max(26px, min(clamp(44px, 13vw, 58px), calc((100vw - 62px - var(--slots) * 6px) / var(--slots))));
+    --depth: 6px;
+    --levels-w: 50px;
+  }
+
+  /* Program on its own row, reset and play underneath */
+  .bar { flex-wrap: wrap; justify-content: center; row-gap: 10px; }
+  .program { order: -1; flex-basis: 100%; width: auto; max-width: none; }
+  /* anchored to the top, JS caps the height so it never reaches the console */
+  .levels { right: 8px; top: 12px; transform: none; gap: 9px; padding: 9px 0 14px; }
   .level { width: 36px; height: 34px; font-size: 17px; }
   .hole { left: 4px; right: calc(var(--levels-w) + 12px); }
   .console { transform: translateX(-50%); max-width: calc(100vw - 16px); bottom: 14px; }

@@ -57,6 +57,8 @@ const ui = {
 function syncHole() {
   const top = ui.console.getBoundingClientRect().top;
   ui.hole.style.bottom = `${window.innerHeight - top + 12}px`;
+  // Keep the level column clear of the console (it can get tall with many levels)
+  ui.levels.style.maxHeight = `${Math.max(120, top - 28)}px`;
 }
 new ResizeObserver(syncHole).observe(ui.console);
 window.addEventListener("resize", syncHole);
