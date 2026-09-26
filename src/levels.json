@@ -19,6 +19,16 @@
     { "note": "mismo pasillo, menos memoria: loop obligatorio", "maxCommands": 2, "loopAvailable": true, "dir": "right", "grid": [".....", "S...B", ".....", "....."] },
     { "note": "practicar el loop hacia abajo",  "maxCommands": 2, "loopAvailable": true,  "dir": "down",  "grid": [".S...", ".....", ".....", ".B..."] },
     { "note": "zig-zag entre árboles",          "maxCommands": 3, "loopAvailable": true,  "dir": "right", "grid": ["S.T..", "T..T.", ".T..T", "..TBT"] },
-    { "note": "zig-zag entre árboles (al revés)", "maxCommands": 3, "loopAvailable": true, "dir": "right", "grid": ["ST...", "..T..", "T..T.", ".T.BT"] }
+    { "note": "zig-zag entre árboles (al revés)", "maxCommands": 3, "loopAvailable": true, "dir": "right", "grid": ["ST...", "..T..", "T..T.", ".T.BT"] },
+    {"note": "∞ y dos baterías en el mismo pasillo", "maxCommands": 2, "loopAvailable": true, "dir": "right", "grid": [".....", "S.B.B", ".....", "....."]},
+    {"note": "subir en escalera desde abajo", "maxCommands": 3, "loopAvailable": true, "dir": "up", "grid": ["T..B.", "T..T.", "..T..", "ST..."]},
+    {"note": "bajar hacia la izquierda", "maxCommands": 3, "loopAvailable": true, "dir": "left", "grid": ["...TS", "..T..", ".T...", ".B..."]},
+    {"note": "escalera grande con baterías en los escalones", "maxCommands": 3, "loopAvailable": true, "dir": "right", "grid": ["S.T...", "T..T..", ".TB.T.", "..T..T", "...TB."]},
+    {"note": "patrón de tres: dos pasos y bajar", "maxCommands": 4, "loopAvailable": true, "dir": "right", "grid": ["S..T..", "T.....", ".T...B", "......"]},
+    {"note": "piedras y árboles: el patrón hay que descubrirlo", "maxCommands": 4, "loopAvailable": true, "dir": "down", "grid": ["S#..#.", "...#..", ".T...#", "..T..B", "#.#..T"]},
+    {"note": "vallas: saltar árboles en fila", "maxCommands": 5, "loopAvailable": true, "dir": "right", "grid": [".......", "ST.T.TB", "......."]},
+    {"note": "vallas con baterías entre árbol y árbol", "maxCommands": 5, "loopAvailable": true, "dir": "down", "grid": [".S.", ".T.", ".B.", ".T.", ".B.", ".T.", ".B."]},
+    {"note": "escalera ancha: dos pasos, dos bajadas", "maxCommands": 5, "loopAvailable": true, "dir": "right", "grid": ["S.B#...", "#..#...", "#...B#.", "###..#.", "....B.."]},
+    {"note": "gran final: patrón de cinco", "maxCommands": 6, "loopAvailable": true, "dir": "right", "grid": [".......", "S.T.T.B", "..B.B..", "......."]}
   ]
 }
