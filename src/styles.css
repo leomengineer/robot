@@ -177,12 +177,13 @@ body.dragging, body.dragging * { cursor: grabbing !important; }
   flex: none;
   display: none;
   place-items: center;
-  width: 32px;
-  height: 22px;
+  /* same footprint as a level button */
+  width: 44px;
+  height: clamp(30px, 5.2vh, 40px);
   border-radius: var(--r);
-  background: rgba(255, 255, 255, .12);
+  background: rgba(255, 255, 255, .14);
 }
-.levels-nav svg { width: 20px; height: 20px; }
+.levels-nav svg { width: 26px; height: 26px; }
 .levels-nav svg .line { stroke-width: 3.5; }
 .levels-nav:active { transform: translateY(1px); background: rgba(255, 255, 255, .22); }
 .levels.can-up .levels-up, .levels.can-down .levels-down { display: grid; }
@@ -435,7 +436,8 @@ body.dragging, body.dragging * { cursor: grabbing !important; }
   .program { order: -1; flex-basis: 100%; width: auto; max-width: none; }
   /* anchored to the top, JS caps the height so it never reaches the console */
   .levels { right: 8px; top: 12px; transform: none; gap: 9px; padding: 9px 0 14px; }
-  .level { width: 36px; height: 34px; font-size: 17px; }
+  .level, .levels-nav { width: 36px; height: 34px; font-size: 17px; }
+  .levels-nav svg { width: 22px; height: 22px; }
   .hole { left: 4px; right: calc(var(--levels-w) + 12px); }
   .console { transform: translateX(-50%); max-width: calc(100vw - 16px); bottom: 14px; }
   .palette { gap: 8px; padding: 9px 10px calc(9px + var(--depth)); }
