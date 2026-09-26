@@ -19,7 +19,15 @@
       <img src="/turtle.png" alt="" draggable="false" />
     </button>
 
-    <nav id="levels" class="levels" aria-label="Elegir nivel"></nav>
+    <nav class="levels" aria-label="Elegir nivel">
+      <button type="button" class="levels-nav levels-up" aria-label="Ver niveles anteriores">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path class="line" d="M6 15l6-6 6 6"/></svg>
+      </button>
+      <div id="levels" class="levels-track"></div>
+      <button type="button" class="levels-nav levels-down" aria-label="Ver más niveles">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path class="line" d="M6 9l6 6 6-6"/></svg>
+      </button>
+    </nav>
 
     <section id="console" class="console" aria-label="Programa del robot">
       <div id="palette" class="palette" aria-label="Instrucciones disponibles"></div>

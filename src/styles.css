@@ -149,16 +149,43 @@ body.dragging, body.dragging * { cursor: grabbing !important; }
   display: flex;
   flex-direction: column;
   align-items: center;
-  /* the column has to fit however many levels there are, on short screens too */
-  gap: clamp(5px, 1.5vh, 12px);
+  /* the panel never grows past the screen; the list inside scrolls */
   max-height: calc(100vh - 24px);
-  overflow-y: auto;
-  scrollbar-width: none;
-  padding: 12px 0 18px;
+  overflow: hidden;
+  padding: 8px 0 12px;
   border-radius: var(--r);
   background: var(--panel-deep);
   box-shadow: inset 0 -6px 0 var(--panel-deeper), 0 10px 18px rgba(35, 25, 55, .3);
 }
+
+.levels-track {
+  position: relative; /* so a level's offsetTop is measured inside the list */
+  width: 100%;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: clamp(5px, 1.5vh, 12px);
+  padding: 6px 0;
+  overflow-y: auto;
+  scrollbar-width: none;
+}
+.levels-track::-webkit-scrollbar { display: none; }
+
+/* Arrows appear only when there are more levels that way */
+.levels-nav {
+  flex: none;
+  display: none;
+  place-items: center;
+  width: 32px;
+  height: 22px;
+  border-radius: var(--r);
+  background: rgba(255, 255, 255, .12);
+}
+.levels-nav svg { width: 20px; height: 20px; }
+.levels-nav svg .line { stroke-width: 3.5; }
+.levels-nav:active { transform: translateY(1px); background: rgba(255, 255, 255, .22); }
+.levels.can-up .levels-up, .levels.can-down .levels-down { display: grid; }
 
 .level {
   --c: var(--panel);

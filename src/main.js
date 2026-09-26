@@ -41,6 +41,9 @@ const ui = {
   console: document.querySelector("#console"),
   celebration: document.querySelector("#celebration"),
   levels: document.querySelector("#levels"),
+  levelsPanel: document.querySelector(".levels"),
+  levelsUp: document.querySelector(".levels-up"),
+  levelsDown: document.querySelector(".levels-down"),
   palette: document.querySelector("#palette"),
   program: document.querySelector("#program"),
   run: document.querySelector("#run"),
@@ -58,7 +61,8 @@ function syncHole() {
   const top = ui.console.getBoundingClientRect().top;
   ui.hole.style.bottom = `${window.innerHeight - top + 12}px`;
   // Keep the level column clear of the console (it can get tall with many levels)
-  ui.levels.style.maxHeight = `${Math.max(120, top - 28)}px`;
+  ui.levelsPanel.style.maxHeight = `${Math.max(120, top - 28)}px`;
+  updateLevelArrows();
 }
 new ResizeObserver(syncHole).observe(ui.console);
 window.addEventListener("resize", syncHole);
@@ -110,6 +114,23 @@ function renderLevelButtons() {
       return button;
     }),
   );
+  // centre the current level in the column (scrollIntoView is unreliable on a just-rebuilt list)
+  const active = ui.levels.querySelector(".level.active");
+  if (active) ui.levels.scrollTop = active.offsetTop - (ui.levels.clientHeight - active.offsetHeight) / 2;
+  updateLevelArrows();
+}
+
+// Show an arrow on the side of the column that has more levels
+function updateLevelArrows() {
+  const track = ui.levels;
+  const more = track.scrollHeight > track.clientHeight + 1;
+  ui.levelsPanel.classList.toggle("can-up", more && track.scrollTop > 4);
+  ui.levelsPanel.classList.toggle("can-down", more && track.scrollTop + track.clientHeight < track.scrollHeight - 4);
+}
+
+function scrollLevels(direction) {
+  const step = ui.levels.querySelector(".level")?.offsetHeight ?? 40;
+  ui.levels.scrollBy({ top: direction * step * 3, behavior: "smooth" });
 }
 
 function renderProgram(activeIndex = -1, crashed = false) {
@@ -355,6 +376,9 @@ ui.reset.addEventListener("click", () => {
 });
 ui.speed.addEventListener("click", () => setSlow(!state.slow));
 ui.next.addEventListener("click", () => loadLevel((state.level + 1) % LEVELS.length));
+ui.levels.addEventListener("scroll", updateLevelArrows, { passive: true });
+ui.levelsUp.addEventListener("click", () => scrollLevels(-1));
+ui.levelsDown.addEventListener("click", () => scrollLevels(1));
 
 window.addEventListener("keydown", (event) => {
   if (!ui.intro.classList.contains("hide")) {
@@ -405,6 +429,7 @@ function startGame() {
   ui.intro.inert = true;
   intro.stop();
   world.paused = false;
+  syncHole(); // the console only gets its final size once the game is on screen
   lastActivity = performance.now();
   ui.run.focus();
 }
